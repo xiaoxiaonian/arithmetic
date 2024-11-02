@@ -1,14 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
+  doWhenWindowReady(() {
+    final window = appWindow;
+    const initialSize = ui.Size(1650, 680);
+    window.minSize = initialSize;
+    window.size = initialSize;
+    window.alignment = Alignment.center;
+    window.title = "应该给年宏博出多少道题呢";
+    window.show();
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -39,10 +49,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  late List<Bean> arr;
+  List<Bean> arr = [];
+  bool debugNeedsPaint = true;
   late TextEditingController editingController;
   late DateTime selectedTime;
   late bool visible;
+  late int quantity, index = 0;
 
   //输入的值，接收键盘输入和擦除尾端
   String content = "";
@@ -53,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     visible = true;
     selectedTime = DateTime.now();
     editingController = TextEditingController(text: "");
-    createBean();
+    // createBean();
   }
 
   @override
@@ -61,53 +73,102 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     return Scaffold(
         body: Padding(
       padding: EdgeInsets.all(20),
-      child: RepaintBoundary(
-          key: repaint,
-          child: SingleChildScrollView(padding: EdgeInsets.only(left: 10),
-            child: Column(
+      child: IndexedStack(
+        index: index,
+        alignment: AlignmentDirectional.center,
+        children: [
+          Container(
+            alignment: AlignmentDirectional.center,
+            color: Colors.transparent,
+            width: 180,
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Expanded(
+                    child: TextField(maxLength: 4,
+                  inputFormatters: [FilteringTextInputFormatter(RegExp(r"\d"), allow: true)],
+                  maxLines: 1,
+                  controller: editingController,
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
+                          ),
+                          borderSide: BorderSide(color: Colors.blueGrey, width: 2)),
+                      hintText: "请输入数字"),
+                )),
+                IconButton(
+                    onPressed: () {
+                      if (editingController.value.text.isNotEmpty) {
+                        setState(() {
+                          String result = editingController.value.text;
+                          quantity = int.parse(result);
+                          createBean();
+                          index = 1;
+                        });
+                      }
+                    },
+                    icon: Icon(Icons.double_arrow_sharp))
+              ],
+            ),
+          ),
+          RepaintBoundary(
+              key: repaint,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(left: 10),
+                child: Column(
                   children: [
-                    Text(
-                      "${selectedTime.year}年${selectedTime.month}月${selectedTime.day}日",
-                      style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              index = 0;
+                              visible=true;
+                            });
+                          },
+                          child: Text(
+                            "${selectedTime.year}年${selectedTime.month}月${selectedTime.day}日",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Visibility(
+                          child: TextButton(onPressed: () => onButtonClicked(), child: Text("截屏并保存")),
+                          visible: visible,
+                        )
+                      ],
                     ),
-                    Visibility(
-                      child: TextButton(onPressed: () => onButtonClicked(), child: Text("截屏并保存")),
-                      visible: visible,
+                    SizedBox(height: 10),
+                    FractionallySizedBox(
+                      widthFactor: 1,
+                      child: Wrap(
+                        spacing: 45,
+                        runSpacing: 25,
+                        children: arr
+                            .asMap()
+                            .keys
+                            .map((index) => Container(
+                                  width: 220,
+                                  color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white,
+                                  child: Text(
+                                    arr[index].label ?? "",
+                                    style: TextStyle(fontSize: 22),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
                     )
                   ],
                 ),
-                SizedBox(height: 10),
-                FractionallySizedBox(
-                  widthFactor: 1,
-                  child: Wrap(
-                    spacing: 45,
-                    runSpacing: 25,
-                    children: arr
-                        .asMap()
-                        .keys
-                        .map((index) => Container(
-                              width: 220,
-                              color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white,
-                              child: Text(
-                                arr[index].label ?? "",
-                                style: TextStyle(fontSize: 22),
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                )
-              ],
-            ),
-          )),
+              ))
+        ],
+      ),
     ));
   }
 
   //随机生成0-9的数字按键，然后增加擦除和随机按键
   void createBean() {
-    arr = List.generate(60, (index) {
+    arr = List.generate(quantity, (index) {
       int num = Random().nextInt(OperatorType.values.length);
       Bean bean = Bean.fromParams(type: OperatorType.values[num]);
       return bean;
@@ -173,13 +234,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   /// 获取截取图片的数据
   Future<Uint8List> getImageData() async {
-
     BuildContext buildContext = repaint.currentContext!;
     RenderObject? boundary = buildContext.findRenderObject();
     // 第一次执行时，boundary.debugNeedsPaint 为 true，此时无法截图（如果为true时直接截图会报错）
-    if (boundary!.debugNeedsPaint) {
+    if (debugNeedsPaint) {
       // 延时一定时间后，boundary.debugNeedsPaint 会变为 false，然后可以正常执行截图的功能
       await Future.delayed(Duration(milliseconds: 20));
+      debugNeedsPaint=false;
       // 重新调用方法
       return getImageData();
     }
@@ -200,7 +261,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     // final filePath = path.join(directory.path, 'image.png');
     // String path = "D:/code/salary_sheet/assets/capture/";
     String path = "C:/Users/Administrator/Desktop/";
-    final file = File("./年宏博的数学题.png");
+    final file = File("$path年宏博的数学题.png");
     await file.writeAsBytes(uint8list!);
     /*for(int i=0 ; i<arrayListSigned.length-1;i++){
       int j = i+1;
