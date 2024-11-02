@@ -7,6 +7,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,6 +29,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: <LocalizationsDelegate<Object>>[
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('zh', 'CH'),
+        const Locale('en', 'US'),
+      ],
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -84,7 +94,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             child: Row(
               children: [
                 Expanded(
-                    child: TextField(maxLength: 4,
+                    child: TextField(
+                  maxLength: 2,
                   inputFormatters: [FilteringTextInputFormatter(RegExp(r"\d"), allow: true)],
                   maxLines: 1,
                   controller: editingController,
@@ -122,15 +133,24 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              index = 0;
-                              visible=true;
-                            });
+                            openDialog();
                           },
                           child: Text(
                             "${selectedTime.year}年${selectedTime.month}月${selectedTime.day}日",
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
+                        ),
+                        Spacer(),
+                        Visibility(
+                          child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  index = 0;
+                                  visible = true;
+                                });
+                              },
+                              child: Text("返回主页")),
+                          visible: visible,
                         ),
                         Visibility(
                           child: TextButton(onPressed: () => onButtonClicked(), child: Text("截屏并保存")),
@@ -240,7 +260,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     if (debugNeedsPaint) {
       // 延时一定时间后，boundary.debugNeedsPaint 会变为 false，然后可以正常执行截图的功能
       await Future.delayed(Duration(milliseconds: 20));
-      debugNeedsPaint=false;
+      debugNeedsPaint = false;
       // 重新调用方法
       return getImageData();
     }
@@ -271,6 +291,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         debugPrint("occur");
       }
     }*/
+  }
+
+  void openDialog() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+      locale: Locale("zh"),
+    ).then((value) => {
+          // debugPrint("showDatePicker")
+          setState(() {
+            selectedTime = value!;
+          })
+        });
   }
 }
 
