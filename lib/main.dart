@@ -367,11 +367,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   void openDialog() {
+    DateTime today =  DateTime.now();
     showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate:today ,
       firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
+      lastDate:today.add(Duration(days: 365)),
       locale: Locale("zh"),
     ).then((value) => {
           // debugPrint("showDatePicker")
