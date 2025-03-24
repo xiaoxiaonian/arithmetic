@@ -19,7 +19,7 @@ Future<void> main() async {
   });
   runApp(MyApp());
 
-/*  doWhenWindowReady(() {
+  /*  doWhenWindowReady(() {
     final window = appWindow;
     const initialSize = ui.Size(1650, 680);
     window.minSize = initialSize;
@@ -37,21 +37,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: <LocalizationsDelegate<Object>>[
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [
-        const Locale('zh', 'CH'),
-        const Locale('en', 'US'),
-      ],
+      localizationsDelegates: <LocalizationsDelegate<Object>>[GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
+      supportedLocales: [const Locale('zh', 'CH'), const Locale('en', 'US')],
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.white), useMaterial3: true),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -102,112 +92,98 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Padding(
-      padding: EdgeInsets.all(20),
-      child: IndexedStack(
-        index: index,
-        alignment: AlignmentDirectional.center,
-        children: [
-          Container(
-            alignment: AlignmentDirectional.center,
-            color: Colors.transparent,
-            width: 180,
-            child: Row(
-              children: [
-                Expanded(
+      body: Container(
+        color: Colors.transparent,
+        padding: EdgeInsets.all(10),
+        child: IndexedStack(
+          index: index,
+          alignment: AlignmentDirectional.center,
+          children: [
+            Container(
+              alignment: AlignmentDirectional.center,
+              color: Colors.red,
+              width: 180,
+              child: Row(
+                children: [
+                  Expanded(
                     child: TextField(
-                  onEditingComplete: () => inputDone(),
-                  maxLength: 2,
-                  inputFormatters: [FilteringTextInputFormatter(RegExp(r"\d"), allow: true)],
-                  maxLines: 1,
-                  textInputAction: TextInputAction.done,
-                  controller: editingController,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10),
-                          ),
-                          borderSide: BorderSide(color: Colors.blueGrey, width: 2)),
-                      hintText: "请输入数字"),
-                )),
-                IconButton(onPressed: () => inputDone(), icon: Icon(Icons.double_arrow_sharp))
-              ],
-            ),
-          ),
-          RepaintBoundary(
-              key: repaint,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(left: 10),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            openDialog();
-                          },
-                          child: Text(
-                            "${selectedTime.year}年${selectedTime.month}月${selectedTime.day}日",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Spacer(),
-                        Visibility(
-                          visible: dashboardVisibility,
-                          child: commonButton(
-                              title: "返回主页",
-                              fun: () {
-                                setState(() {
-                                  index = 0;
-                                  dashboardVisibility = true;
-                                });
-                              }),
-                        ),
-                        SizedBox(width: 10),
-                        Visibility(
-                          visible: dashboardVisibility,
-                          child: commonButton(
-                              title: answerVisibility == false ? "显示答案" : "隐藏答案",
-                              fun: () {
-                                setState(() {
-                                  answerVisibility = !answerVisibility;
-                                });
-                              }),
-                        ),
-                        SizedBox(width: 10),
-                        Visibility(
-                          visible: dashboardVisibility,
-                          child: commonButton(title: "截屏并保存", fun: () => onButtonClicked()),
-                        )
-                      ],
+                      onEditingComplete: () => inputDone(),
+                      maxLength: 2,
+                      inputFormatters: [FilteringTextInputFormatter(RegExp(r"\d"), allow: true)],
+                      maxLines: 1,
+                      textInputAction: TextInputAction.done,
+                      controller: editingController,
+                      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: Colors.blueGrey, width: 2)), hintText: "请输入数字"),
                     ),
-                    SizedBox(height: 10),
-                    FractionallySizedBox(
-                      widthFactor: 1,
-                      child: Wrap(
-                        spacing: 45,
-                        runSpacing: 25,
-                        children: arr
-                            .asMap()
-                            .keys
-                            .map((index) => Container(
-                                  width: 220,
-                                  color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white,
-                                  child: Text(
-                                    "${arr[index].label}${answerVisibility == true ? arr[index].answer : ""}",
-                                    style: TextStyle(fontSize: 22),
-                                  ),
-                                ))
-                            .toList(),
+                  ),
+                  IconButton(onPressed: () => inputDone(), icon: Icon(Icons.double_arrow_sharp)),
+                ],
+              ),
+            ),
+            RepaintBoundary(
+              key: repaint,
+              child: Column(
+                // mainAxisSize: ,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          openDialog();
+                        },
+                        child: Text("${selectedTime.year}年${selectedTime.month}月${selectedTime.day}日", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
-                    )
-                  ],
-                ),
-              ))
-        ],
+                      Spacer(),
+                      Visibility(
+                        visible: dashboardVisibility,
+                        child: commonButton(
+                          title: "返回主页",
+                          fun: () {
+                            setState(() {
+                              index = 0;
+                              dashboardVisibility = true;
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Visibility(
+                        visible: dashboardVisibility,
+                        child: commonButton(
+                          title: answerVisibility == false ? "显示答案" : "隐藏答案",
+                          fun: () {
+                            setState(() {
+                              answerVisibility = !answerVisibility;
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Visibility(visible: dashboardVisibility, child: commonButton(title: "截屏并保存", fun: () => onButtonClicked())),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 1,
+                      runSpacing: 355,
+                      children:
+                          arr
+                              .asMap()
+                              .keys
+                              .map((index) => FractionallySizedBox(widthFactor: 0.18, child: Container(color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white, child: Text("${arr[index].label}${answerVisibility == true ? arr[index].answer : ""}", style: TextStyle(fontSize: 22)))))
+                              .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   // region  ---- 创造一个个题目和答案 ----
@@ -215,15 +191,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     arr = List.generate(quantity, (index) {
       int num = Random().nextInt(OperatorType.values.length);
       Bean bean = Bean.fromParams(type: OperatorType.values[num]);
+      bean = Bean.fromParams(type: OperatorType.values[3]);
       return bean;
     });
     int left, right, count = 1;
     for (var bean in arr) {
       left = Random().nextInt(999);
-      right = Random().nextInt(999);
+      right = Random().nextInt(7) + 3;
       while (!diagnose(operator: bean.type!, left: left, right: right)) {
         left = Random().nextInt(999);
-        right = Random().nextInt(999);
+        // right = Random().nextInt(999);
+        right = Random().nextInt(7) + 3;
       }
       bean.label = "($count)  $left${bean.type?.label}$right=";
       bean.answer = getAnswer(operator: bean.type!, left: left, right: right);
@@ -280,6 +258,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           result = false;
         } else {}
         break;
+      case OperatorType.division:
+        if (left % right > 0 || left < 100) {
+          result = false;
+        }
+        break;
     }
     return result;
   }
@@ -299,12 +282,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       case OperatorType.multiplication:
         answer = left * right;
         break;
-      }
+      case OperatorType.division:
+        answer = left ~/ right;
+        break;
+    }
     return answer;
   }
 
   // endregion
-
 
   // region  ---- 截屏并且在指定路径输出图片 ----
   void onButtonClicked() {
@@ -318,6 +303,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       });
     });
   }
+
   // endregion
 
   Uint8List? uint8list;
@@ -347,6 +333,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     // 返回图片的数据
     return imageBytes!;
   }
+
   // endregion
 
   downloadPicture() async {
@@ -354,7 +341,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     // final filePath = path.join(directory.path, 'image.png');
     // String path = "D:/code/salary_sheet/assets/capture/";
     String path = "C:/Users/Administrator/Desktop/";
-    final file = File("$path${answerVisibility?"数学题答案.png":"年宏博的数学题.png"}");
+    final file = File("$path${answerVisibility ? "数学题答案.png" : "年宏博的数学题.png"}");
     await file.writeAsBytes(uint8list!);
     /*for(int i=0 ; i<arrayListSigned.length-1;i++){
       int j = i+1;
@@ -367,19 +354,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   void openDialog() {
-    DateTime today =  DateTime.now();
-    showDatePicker(
-      context: context,
-      initialDate:today ,
-      firstDate: DateTime(1950),
-      lastDate:today.add(Duration(days: 365)),
-      locale: Locale("zh"),
-    ).then((value) => {
-          // debugPrint("showDatePicker")
-          setState(() {
-            selectedTime = value??DateTime.now();
-          })
-        });
+    DateTime today = DateTime.now();
+    showDatePicker(context: context, initialDate: today, firstDate: DateTime(1950), lastDate: today.add(Duration(days: 365)), locale: Locale("zh")).then(
+      (value) => {
+        // debugPrint("showDatePicker")
+        setState(() {
+          selectedTime = value ?? DateTime.now();
+        }),
+      },
+    );
   }
 }
 
@@ -425,11 +408,12 @@ class Bean {
 enum OperatorType {
   plus(label: "+"),
   minus(label: "-"),
-  multiplication(label: "×");
-  // division(label: "÷");
+  multiplication(label: "×"),
+  division(label: "÷");
 
   final String label;
 
   const OperatorType({required this.label});
 }
+
 // endregion
