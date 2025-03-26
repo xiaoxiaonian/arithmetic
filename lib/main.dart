@@ -101,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           children: [
             Container(
               alignment: AlignmentDirectional.center,
-              color: Colors.red,
+              color: Colors.transparent,
               width: 180,
               child: Row(
                 children: [
@@ -166,15 +166,28 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   ),
                   SizedBox(height: 10),
                   Expanded(
-                    child: Wrap(
-                      spacing: 1,
-                      runSpacing: 355,
-                      children:
-                          arr
-                              .asMap()
-                              .keys
-                              .map((index) => FractionallySizedBox(widthFactor: 0.18, child: Container(color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white, child: Text("${arr[index].label}${answerVisibility == true ? arr[index].answer : ""}", style: TextStyle(fontSize: 22)))))
-                              .toList(),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      // color: Colors.green,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        runAlignment: WrapAlignment.start,
+                        runSpacing: 500,
+                        children:
+                            arr
+                                .asMap()
+                                .keys
+                                .map(
+                                  (index) => FractionallySizedBox(
+                                    widthFactor: 0.18,
+                                    child: Container(
+                                      color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white,
+                                      child: Text("${arr[index].label}${answerVisibility == true ? arr[index].answer : ""}${answerVisibility == true ? "..." : ""}   ${answerVisibility == true ? arr[index].additional : ""}", style: TextStyle(fontSize: 32)),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                      ),
                     ),
                   ),
                 ],
@@ -205,6 +218,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       }
       bean.label = "($count)  $left${bean.type?.label}$right=";
       bean.answer = getAnswer(operator: bean.type!, left: left, right: right);
+      bean.additional = getAdditional(operator: bean.type!, left: left, right: right);
       count++;
     }
   }
@@ -225,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   // endregion
 
-  // region  ---- 出题合法性挣断 ----
+  // region  ---- 出题合法性诊断 ----
   bool diagnose({required OperatorType operator, required int left, required int right}) {
     bool result = true;
     switch (operator) {
@@ -259,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         } else {}
         break;
       case OperatorType.division:
-        if (left % right > 0 || left < 100) {
+        if (left < 100) {
           result = false;
         }
         break;
@@ -290,6 +304,26 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   // endregion
+
+  //region  ---- 返回余数 ----
+  ///            返回余数
+  int getAdditional({required OperatorType operator, required int left, required int right}) {
+    late int additional;
+    switch (operator) {
+      case OperatorType.plus:
+        break;
+      case OperatorType.minus:
+        break;
+      case OperatorType.multiplication:
+        break;
+      case OperatorType.division:
+        additional = left % right;
+        break;
+    }
+    return additional;
+  }
+
+  //endregion
 
   // region  ---- 截屏并且在指定路径输出图片 ----
   void onButtonClicked() {
@@ -340,7 +374,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     // final directory = await getApplicationDocumentsDirectory();
     // final filePath = path.join(directory.path, 'image.png');
     // String path = "D:/code/salary_sheet/assets/capture/";
-    String path = "C:/Users/Administrator/Desktop/";
+    String path = "C:/Users/年锐/Desktop/";
     final file = File("$path${answerVisibility ? "数学题答案.png" : "年宏博的数学题.png"}");
     await file.writeAsBytes(uint8list!);
     /*for(int i=0 ; i<arrayListSigned.length-1;i++){
@@ -380,10 +414,11 @@ MaterialButton commonButton({required String title, required Function fun}) {
 // region  ---- 数据结构 ----
 class Bean {
   int? answer;
+  int? additional;
   String? label;
   OperatorType? type;
 
-  Bean.fromParams({this.answer, this.label, this.type});
+  Bean.fromParams({this.answer, this.additional, this.label, this.type});
 
   factory Bean(Object jsonStr) => jsonStr is String ? Bean.fromJson(json.decode(jsonStr)) : Bean.fromJson(jsonStr);
 
@@ -391,6 +426,7 @@ class Bean {
 
   Bean.fromJson(jsonRes) {
     answer = jsonRes['answer'];
+    additional = jsonRes['additional'];
     label = jsonRes['label'];
     type = jsonRes['type'];
   }

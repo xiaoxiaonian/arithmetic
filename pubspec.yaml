@@ -66,5 +66,4 @@ msix_config:
     publisher_display_name: nianrui
     identity_name: com.nr
     msix_version: 1.0.0.0
-    logo_path: kv99.jpg
 
