@@ -85,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.initState();
     dashboardVisibility = true;
     selectedTime = DateTime.now();
-    editingController = TextEditingController(text: "");
+    editingController = TextEditingController(text: "10");
     // createBean();
   }
 
@@ -204,21 +204,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     arr = List.generate(quantity, (index) {
       int num = Random().nextInt(OperatorType.values.length);
       Bean bean = Bean.fromParams(type: OperatorType.values[num]);
-      bean = Bean.fromParams(type: OperatorType.values[3]);
+      bean = Bean.fromParams(type: OperatorType.values[2]);
       return bean;
     });
     int left, right, count = 1;
     for (var bean in arr) {
-      left = Random().nextInt(999);
-      right = Random().nextInt(7) + 3;
+      left = Random().nextInt(84) + 15;
+      right = Random().nextInt(84) + 15;
       while (!diagnose(operator: bean.type!, left: left, right: right)) {
-        left = Random().nextInt(999);
+        left = Random().nextInt(84) + 15;
         // right = Random().nextInt(999);
-        right = Random().nextInt(7) + 3;
+        right = Random().nextInt(84) + 15;
       }
       bean.label = "($count)  $left${bean.type?.label}$right=";
       bean.answer = getAnswer(operator: bean.type!, left: left, right: right);
-      bean.additional = getAdditional(operator: bean.type!, left: left, right: right);
+      if (bean.type!.isDivision) {
+        bean.additional = getAdditional(operator: bean.type!, left: left, right: right);
+      }
       count++;
     }
   }
@@ -266,9 +268,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         } else {}
         break;
       case OperatorType.multiplication:
-        if (left < 2 || right < 2) {
+        if (left %10 ==0 || right %10 == 0) {
           result = false;
-        } else if (!((left < 100 && right < 10) || (left < 10 && right < 100))) {
+        } else if (/*!((left < 100 && right < 10) || (left < 10 && right < 100))*/false) {
           result = false;
         } else {}
         break;
@@ -447,6 +449,7 @@ enum OperatorType {
   multiplication(label: "×"),
   division(label: "÷");
 
+  bool get isDivision => this == division;
   final String label;
 
   const OperatorType({required this.label});
