@@ -11,14 +11,15 @@ import 'package:window_manager/window_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await windowManager.ensureInitialized();
-  WindowOptions windowOptions = WindowOptions(size: Size(1650, 850), center: true, title: "应该给年宏博出多少道题呢");
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
+  if(Platform.isWindows) {
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = WindowOptions(size: Size(1650, 850), center: true, title: "应该给年宏博出多少道题呢");
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
   runApp(MyApp());
-
   /*  doWhenWindowReady(() {
     final window = appWindow;
     const initialSize = ui.Size(1650, 680);
@@ -92,6 +93,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text("两位数乘法"),),
       body: Container(
         color: Colors.transparent,
         padding: EdgeInsets.all(10),
@@ -126,70 +128,74 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 // mainAxisSize: ,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          openDialog();
-                        },
-                        child: Text("${selectedTime.year}年${selectedTime.month}月${selectedTime.day}日", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      ),
-                      Spacer(),
-                      Visibility(
-                        visible: dashboardVisibility,
-                        child: commonButton(
-                          title: "返回主页",
-                          fun: () {
-                            setState(() {
-                              index = 0;
-                              dashboardVisibility = true;
-                            });
+                  if (Platform.isAndroid)
+                    ...arr.asMap().keys.map((index)=>Text("${arr[index].label}", style: TextStyle(fontSize: 32)))
+                  else if (Platform.isWindows) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            openDialog();
                           },
+                          child: Text("${selectedTime.year}年${selectedTime.month}月${selectedTime.day}日", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      Visibility(
-                        visible: dashboardVisibility,
-                        child: commonButton(
-                          title: answerVisibility == false ? "显示答案" : "隐藏答案",
-                          fun: () {
-                            setState(() {
-                              answerVisibility = !answerVisibility;
-                            });
-                          },
+                        Spacer(),
+                        Visibility(
+                          visible: dashboardVisibility,
+                          child: commonButton(
+                            title: "返回主页",
+                            fun: () {
+                              setState(() {
+                                index = 0;
+                                dashboardVisibility = true;
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      Visibility(visible: dashboardVisibility, child: commonButton(title: "截屏并保存", fun: () => onButtonClicked())),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      // color: Colors.green,
-                      child: Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        runAlignment: WrapAlignment.start,
-                        runSpacing: 500,
-                        children:
-                            arr
-                                .asMap()
-                                .keys
-                                .map(
-                                  (index) => FractionallySizedBox(
-                                    widthFactor: 0.18,
-                                    child: Container(
-                                      color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white,
-                                      child: Text("${arr[index].label}${answerVisibility == true ? arr[index].answer : ""}${answerVisibility == true ? "..." : ""}   ${answerVisibility == true ? arr[index].additional : ""}", style: TextStyle(fontSize: 32)),
+                        SizedBox(width: 10),
+                        Visibility(
+                          visible: dashboardVisibility,
+                          child: commonButton(
+                            title: answerVisibility == false ? "显示答案" : "隐藏答案",
+                            fun: () {
+                              setState(() {
+                                answerVisibility = !answerVisibility;
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Visibility(visible: dashboardVisibility, child: commonButton(title: "截屏并保存", fun: () => onButtonClicked())),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Expanded(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        // color: Colors.green,
+                        child: Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          runAlignment: WrapAlignment.start,
+                          runSpacing: 500,
+                          children:
+                              arr
+                                  .asMap()
+                                  .keys
+                                  .map(
+                                    (index) => FractionallySizedBox(
+                                      widthFactor: 0.18,
+                                      child: Container(
+                                        color: index % 2 == 0 ? Colors.black12.withAlpha(20) : Colors.white,
+                                        child: Text("${arr[index].label}${answerVisibility == true ? arr[index].answer : ""}${answerVisibility == true ? "..." : ""}   ${answerVisibility == true ? arr[index].additional : ""}", style: TextStyle(fontSize: 32)),
+                                      ),
                                     ),
-                                  ),
-                                )
-                                .toList(),
+                                  )
+                                  .toList(),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -268,9 +274,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         } else {}
         break;
       case OperatorType.multiplication:
-        if (left %10 ==0 || right %10 == 0) {
+        if (left % 10 == 0 || right % 10 == 0) {
           result = false;
-        } else if (/*!((left < 100 && right < 10) || (left < 10 && right < 100))*/false) {
+        } else if ( /*!((left < 100 && right < 10) || (left < 10 && right < 100))*/ false) {
           result = false;
         } else {}
         break;
